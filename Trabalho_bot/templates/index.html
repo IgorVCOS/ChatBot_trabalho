@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <title>Chatbot TechStore</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: black; padding: 20px; }
+        .chat-container {
+            max-width: 600px; margin: auto; background: white; padding: 20px;
+            border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        #chat-box {
+            height: 300px; overflow-y: auto; border: 1px solid #ddd;
+            padding: 10px; margin-bottom: 10px; background: #fafafa;
+        }
+        .mensagem { margin: 8px 0; }
+        .usuario { color: blue; }
+        .bot { color: green; }
+        input[type="text"] {
+            width: 80%; padding: 10px; font-size: 16px;
+            border: 1px solid #ccc; border-radius: 4px;
+        }
+        button {
+            padding: 10px 15px; font-size: 16px;
+            border: none; border-radius: 4px; background: #007BFF; color: white;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <h2>Assistente Virtual - TechStore</h2>
+        <div id="chat-box"></div>
+        <input type="text" id="mensagem" placeholder="Digite sua mensagem aqui" />
+        <button onclick="enviar()">Enviar</button>
+        <button onclick="limpar()">Limpar</button>
+    </div>
+
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const inputMsg = document.getElementById('mensagem');
+
+        function adicionarMensagem(texto, classe) {
+            const div = document.createElement('div');
+            div.className = 'mensagem ' + classe;
+            div.innerHTML = texto;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function enviar() {
+            const mensagem = inputMsg.value.trim();
+            if (!mensagem) return;
+
+            adicionarMensagem('<strong>Você:</strong> ' + mensagem, 'usuario');
+            inputMsg.value = '';
+
+            fetch('/enviar', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({mensagem})
+            })
+            .then(res => res.json())
+            .then(data => {
+                adicionarMensagem('<strong>Bot:</strong> ' + data.resposta, 'bot');
+            })
+            .catch(() => {
+                adicionarMensagem('<strong>Bot:</strong> Ocorreu um erro no servidor.', 'bot');
+            });
+        }
+
+        function limpar() {
+            chatBox.innerHTML = '';
+        }
+
+        // Enviar mensagem ao apertar Enter
+        inputMsg.addEventListener('keydown', function(e) {
+            if(e.key === 'Enter') enviar();
+        });
+    </script>
+</body>
+</html>
